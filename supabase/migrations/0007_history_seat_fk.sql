@@ -1,0 +1,22 @@
+-- Sitzplan: assignment_history.seat_id von der FK auf seats(id) lösen
+--
+-- Bug, der erst bei restore_snapshot() live auffällt: `delete from tables
+-- where scenario_id = ...` kaskadiert über seats() bis zu assignments().
+-- Das AFTER-DELETE des log_assignment_history()-Triggers versucht dabei,
+-- eine NEUE Zeile mit `seat_id = OLD.seat_id` einzufügen — aber genau
+-- dieser Sitz wird in DERSELBEN Kaskade gerade mitgelöscht. Der FK-Check
+-- beim INSERT schlägt fehl ("insert or update on table assignment_history
+-- violates foreign key constraint"), obwohl `on delete set null` genau für
+-- diesen Fall gedacht war — das gilt aber nur für schon BESTEHENDE Zeilen,
+-- nicht für einen neuen INSERT während derselben Kaskade.
+--
+-- Historie ist ohnehin ein Audit-Log, kein Datensatz mit Live-Bezug: schon
+-- ohne diesen Bug zeigen ältere Einträge nach einem Snapshot-Restore
+-- "unbekannter Platz", weil sich Sitz-IDs beim Restore grundsätzlich
+-- ändern (siehe HistoryPanel.tsx). Ein referenzierter, aber inzwischen
+-- gelöschter Sitz ist für ein Audit-Log also ein normaler, akzeptierter
+-- Zustand — die FK-Durchsetzung bringt hier keinen echten Sicherheitswert,
+-- nur genau diesen Fehlschlag. Deshalb: FK entfernen, Spalte bleibt (reine
+-- Info, "welcher Sitz war das damals").
+
+alter table assignment_history drop constraint assignment_history_seat_id_fkey;
