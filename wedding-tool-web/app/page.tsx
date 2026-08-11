@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { DndContext, PointerSensor, useSensor, useSensors, type DragEndEvent, type DragStartEvent } from "@dnd-kit/core";
+import { DndContext, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent, type DragStartEvent } from "@dnd-kit/core";
 import { useSeatingData } from "@/hooks/useSeatingData";
 import { useAuth } from "@/hooks/useAuth";
 import { GuestPool } from "@/components/GuestPool";
@@ -135,7 +135,16 @@ function SeatingApp({ user, onSignOut }: { user: AuthUser; onSignOut: () => void
   if (loadError || !data) return <div className="app-shell">Fehler beim Laden: {loadError}</div>;
 
   return (
-    <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+    // collisionDetection: explizit closestCenter statt dnd-kits Default
+    // (rectIntersection). Der Gästepool-Eintrag, den man zieht, ist als
+    // Sidebar-Listenelement viel breiter (~250px) als ein einzelner Sitz
+    // (~46px) — rectIntersection wählt den Droppable mit der größten
+    // Überlappungsfläche zur GESAMTEN gezogenen Box, wodurch bei eng
+    // beieinanderliegenden Sitzen ein falscher (ggf. bereits belegter)
+    // Nachbarsitz "gewinnen" kann, obwohl der Mauszeiger sichtbar über dem
+    // richtigen Sitz steht. closestCenter vergleicht stattdessen die
+    // Mittelpunkte und liefert das erwartete, zeigerbasierte Verhalten.
+    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
       <div className="app-shell">
         <StatusBar status={connectionStatus} others={others} user={user} onSignOut={onSignOut} />
 
