@@ -53,6 +53,7 @@ export function SnapshotPanel({ listSnapshots, createSnapshot, restoreSnapshot, 
       return;
     setBusy(true);
     await restoreSnapshot(snapshot.id);
+    await refresh(); // Liste zeigt sonst die neue Auto-Sicherung erst nach Zu-/Aufklappen
     setBusy(false);
   }
 
