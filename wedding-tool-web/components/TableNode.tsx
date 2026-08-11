@@ -26,6 +26,12 @@ interface TableNodeProps {
 // halb so weit wie der Mauszeiger (CSS-Transforms verschachteln sich
 // multiplikativ). Exakt dieselbe Rechnung wie im alten Tool
 // (onTableDragMove: dxCanvas = dxScreen / viewport.zoom).
+//
+// Der Greifpunkt ist die GANZE Tischfläche, nicht nur das Label — bei 8
+// Plätzen um ein kleines Namens-Label herum war das ein zu kleiner
+// Trefferbereich. Besetzte Sitze bleiben trotzdem einzeln ziehbar: ihr
+// eigener Pointerdown-Handler sitzt weiter innen im DOM und feuert vor dem
+// des Tisches, dnd-kit lässt dann nur den zuerst aktivierten Sensor zu.
 export function TableNode({
   table,
   seats,
@@ -53,6 +59,8 @@ export function TableNode({
   return (
     <div
       ref={draggable.setNodeRef}
+      {...draggable.listeners}
+      {...draggable.attributes}
       className={`table table--${table.type}`}
       style={{
         position: "absolute",
@@ -64,9 +72,7 @@ export function TableNode({
         zIndex: draggable.isDragging ? 10 : 1
       }}
     >
-      <div className="table__label" {...draggable.listeners} {...draggable.attributes}>
-        {table.label}
-      </div>
+      <div className="table__label">{table.label}</div>
       {getSeatLayout(table.type).map((slot) => {
         const seatId = seatIdByIndex.get(slot.index);
         if (!seatId) return null; // seats-Zeile fehlt (sollte durch DB-Trigger nie vorkommen)

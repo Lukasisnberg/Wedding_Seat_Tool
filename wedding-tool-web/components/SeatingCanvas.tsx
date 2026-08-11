@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useRef, type PointerEvent as ReactPointerEvent, type WheelEvent as ReactWheelEvent } from "react";
+import { useCallback, useEffect, useRef, type PointerEvent as ReactPointerEvent, type WheelEvent as ReactWheelEvent } from "react";
 import { TableNode } from "./TableNode";
+import { fitViewportToTables } from "@/lib/viewportFit";
 import type { Assignment, Guest, Group, Seat, TableRow } from "@/lib/types";
 
 export interface ViewportState {
@@ -45,6 +46,19 @@ export function SeatingCanvas({
 }: SeatingCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const panState = useRef<{ startX: number; startY: number; panX: number; panY: number } | null>(null);
+
+  // Einmalig beim ersten Laden auf den Sitzplan zentrieren — siehe
+  // lib/viewportFit.ts. Nur EIN Mal (hasFitRef-Wächter), sonst würde jede
+  // Tischverschiebung (ändert `tables`) die Ansicht wieder zurückspringen
+  // lassen, mitten im Ziehen.
+  const hasFitRef = useRef(false);
+  useEffect(() => {
+    if (hasFitRef.current || tables.length === 0 || !containerRef.current) return;
+    hasFitRef.current = true;
+    const rect = containerRef.current.getBoundingClientRect();
+    onViewportChange(fitViewportToTables(tables, rect.width, rect.height));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tables.length]);
 
   const handleWheel = useCallback(
     (e: ReactWheelEvent<HTMLDivElement>) => {
