@@ -121,6 +121,12 @@ body { display: flex; flex-direction: column; }
   font-size: 12px; padding: 4px 0; border-bottom: 1px solid var(--border);
 }
 .snapshot-item__name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.snapshot-item__actions { display: flex; gap: 4px; flex: 0 0 auto; }
+.snapshot-item__delete {
+  border: none !important; background: none !important; color: var(--muted); font-size: 15px;
+  line-height: 1; padding: 2px 6px !important; font-weight: 400 !important;
+}
+.snapshot-item__delete:hover:not(:disabled) { color: var(--danger); }
 
 /* Layout-Panel */
 .layout-panel { display: flex; flex-direction: column; gap: 10px; }

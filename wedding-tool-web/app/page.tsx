@@ -54,7 +54,8 @@ function SeatingApp({ user, onSignOut }: { user: AuthUser; onSignOut: () => void
     loadProfiles,
     listSnapshots,
     createSnapshot,
-    restoreSnapshot
+    restoreSnapshot,
+    deleteSnapshot
   } = useSeatingData(user);
   const [viewport, setViewport] = useState<ViewportState>({ zoom: 1, panX: 0, panY: 0 });
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
@@ -180,7 +181,12 @@ function SeatingApp({ user, onSignOut }: { user: AuthUser; onSignOut: () => void
               seatsById={seatsById}
               tablesById={tablesById}
             />
-            <SnapshotPanel listSnapshots={listSnapshots} createSnapshot={createSnapshot} restoreSnapshot={restoreSnapshot} />
+            <SnapshotPanel
+              listSnapshots={listSnapshots}
+              createSnapshot={createSnapshot}
+              restoreSnapshot={restoreSnapshot}
+              deleteSnapshot={deleteSnapshot}
+            />
 
             <section>
               <RowLayoutPanel

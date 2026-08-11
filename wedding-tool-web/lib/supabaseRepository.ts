@@ -171,6 +171,11 @@ export function createSupabaseRepository(): SeatingRepository {
       broadcastRefresh();
     },
 
+    async deleteSnapshot(snapshotId) {
+      const { error } = await client.from("scenario_snapshots").delete().eq("id", snapshotId);
+      if (error) throw toSeatingError(error);
+    },
+
     subscribeToChanges(callbacks: DataChangeCallbacks) {
       const channel = client
         .channel("seating-changes")

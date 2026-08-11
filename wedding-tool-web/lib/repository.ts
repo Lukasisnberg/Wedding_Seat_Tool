@@ -32,6 +32,7 @@ export interface SeatingRepository {
   listSnapshots(scenarioId: string): Promise<ScenarioSnapshot[]>;
   createSnapshot(scenarioId: string, name: string): Promise<void>;
   restoreSnapshot(snapshotId: string): Promise<void>;
+  deleteSnapshot(snapshotId: string): Promise<void>;
 
   // Realtime: liefert laufende Änderungen anderer Clients, bis die
   // zurückgegebene Funktion aufgerufen wird (Unsubscribe).

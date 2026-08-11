@@ -280,12 +280,23 @@ export function useSeatingData(user: AuthUser) {
       try {
         await repo.restoreSnapshot(snapshotId);
         refresh();
-        pushToast("Snapshot wiederhergestellt.", "info");
+        pushToast("Snapshot wiederhergestellt. Der vorherige Stand wurde automatisch als Sicherung gespeichert.", "info");
       } catch (err) {
         reportError(err);
       }
     },
     [repo, refresh, reportError, pushToast]
+  );
+
+  const deleteSnapshot = useCallback(
+    async (snapshotId: string) => {
+      try {
+        await repo.deleteSnapshot(snapshotId);
+      } catch (err) {
+        reportError(err);
+      }
+    },
+    [repo, reportError]
   );
 
   return {
@@ -306,6 +317,7 @@ export function useSeatingData(user: AuthUser) {
     loadProfiles,
     listSnapshots,
     createSnapshot,
-    restoreSnapshot
+    restoreSnapshot,
+    deleteSnapshot
   };
 }

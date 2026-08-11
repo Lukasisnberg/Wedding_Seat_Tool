@@ -7,6 +7,7 @@ interface SnapshotPanelProps {
   listSnapshots: () => Promise<ScenarioSnapshot[]>;
   createSnapshot: (name: string) => Promise<void>;
   restoreSnapshot: (snapshotId: string) => Promise<void>;
+  deleteSnapshot: (snapshotId: string) => Promise<void>;
 }
 
 // Benannte Sicherungspunkte (Phase 6, "Snapshots"): den aktuellen Sitzplan
@@ -14,7 +15,7 @@ interface SnapshotPanelProps {
 // wiederherzustellen. Siehe Migration 0004 für die Design-Entscheidung,
 // warum das über ein JSONB-Abbild läuft statt über parallel existierende
 // Tisch/Sitz-Zeilen.
-export function SnapshotPanel({ listSnapshots, createSnapshot, restoreSnapshot }: SnapshotPanelProps) {
+export function SnapshotPanel({ listSnapshots, createSnapshot, restoreSnapshot, deleteSnapshot }: SnapshotPanelProps) {
   const [open, setOpen] = useState(false);
   const [snapshots, setSnapshots] = useState<ScenarioSnapshot[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -48,9 +49,19 @@ export function SnapshotPanel({ listSnapshots, createSnapshot, restoreSnapshot }
 
   async function handleRestore(snapshot: ScenarioSnapshot) {
     if (busy) return;
-    if (!window.confirm(`„${snapshot.name}" laden? Der aktuelle Sitzplan wird dabei ersetzt.`)) return;
+    if (!window.confirm(`„${snapshot.name}" laden? Der aktuelle Sitzplan wird dabei ersetzt (der bisherige Stand wird automatisch als Sicherung gespeichert).`))
+      return;
     setBusy(true);
     await restoreSnapshot(snapshot.id);
+    setBusy(false);
+  }
+
+  async function handleDelete(snapshot: ScenarioSnapshot) {
+    if (busy) return;
+    if (!window.confirm(`„${snapshot.name}" endgültig löschen?`)) return;
+    setBusy(true);
+    await deleteSnapshot(snapshot.id);
+    await refresh();
     setBusy(false);
   }
 
@@ -80,10 +91,17 @@ export function SnapshotPanel({ listSnapshots, createSnapshot, restoreSnapshot }
             <ul className="snapshot-list">
               {snapshots.map((s) => (
                 <li key={s.id} className="snapshot-item">
-                  <span className="snapshot-item__name">{s.name}</span>
-                  <button type="button" onClick={() => handleRestore(s)} disabled={busy}>
-                    Laden
-                  </button>
+                  <span className="snapshot-item__name" title={s.name}>
+                    {s.name}
+                  </span>
+                  <span className="snapshot-item__actions">
+                    <button type="button" onClick={() => handleRestore(s)} disabled={busy}>
+                      Laden
+                    </button>
+                    <button type="button" className="snapshot-item__delete" onClick={() => handleDelete(s)} disabled={busy}>
+                      ×
+                    </button>
+                  </span>
                 </li>
               ))}
             </ul>

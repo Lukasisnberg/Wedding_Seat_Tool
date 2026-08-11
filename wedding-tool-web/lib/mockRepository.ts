@@ -388,6 +388,18 @@ export function createMockRepository(): SeatingRepository {
       const snap = store.snapshots.find((s) => s.id === snapshotId);
       if (!snap) throw new SeatingError("Snapshot existiert nicht.", "SNAPSHOT_NOT_FOUND");
 
+      // Sicherheitsnetz wie beim echten restore_snapshot (Migration 0006):
+      // aktuellen Stand automatisch sichern, bevor er überschrieben wird.
+      store.snapshots.push({
+        id: genId("snap"),
+        scenario_id: store.scenario.id,
+        name: `Automatische Sicherung vor "${snap.name}" (${new Date().toLocaleString("de-DE")})`,
+        created_at: now(),
+        tables: store.tables.map((t) => ({ ...t })),
+        seats: store.seats.map((s) => ({ ...s })),
+        assignments: store.assignments.map((a) => ({ ...a }))
+      });
+
       // Neue Tisch-/Sitz-IDs erzeugen (wie beim echten restore_snapshot),
       // Zuweisungen nur für noch existierende Gäste übernehmen.
       const tableIdMap = new Map<string, string>();
@@ -423,6 +435,11 @@ export function createMockRepository(): SeatingRepository {
         seats: newSeats,
         assignments: newAssignments
       } satisfies SyncMessage);
+    },
+
+    async deleteSnapshot(snapshotId) {
+      await delay(100);
+      store.snapshots = store.snapshots.filter((s) => s.id !== snapshotId);
     },
 
     async updateTablePosition(tableId, posX, posY, rotation) {
