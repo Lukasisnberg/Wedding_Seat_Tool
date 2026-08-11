@@ -1,0 +1,24 @@
+# Dependencies & build output
+node_modules/
+wedding-tool-web/.next/
+wedding-tool-web/out/
+*.tsbuildinfo
+
+# Env / secrets
+.env
+.env.local
+.env*.local
+
+# Claude Code session/tooling config (lokal, nicht Teil der App)
+.claude/
+
+# Alte, dateibasierte Version + echte Gästedaten — bewusst nicht im Repo,
+# siehe Migrationsleitfaden: Gästedaten leben jetzt in Supabase, nicht in
+# Dateien im Projektordner.
+sitzplan.html
+sitzplan-aktualisiert.json
+sitzplan-import-vorschlag.json
+
+# OS
+.DS_Store
+Thumbs.db
