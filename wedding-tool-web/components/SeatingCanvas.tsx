@@ -26,6 +26,7 @@ interface SeatingCanvasProps {
   dragEnabled: boolean;
   draggedByOthers: Map<string, string>;
   moveTable: (tableId: string, posX: number, posY: number, rotation: number) => void;
+  layoutVersion: number;
 }
 
 // Pan/Zoom laufen bewusst NICHT über dnd-kit (das ist für das Ziehen von
@@ -44,23 +45,26 @@ export function SeatingCanvas({
   onViewportChange,
   dragEnabled,
   draggedByOthers,
-  moveTable
+  moveTable,
+  layoutVersion
 }: SeatingCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const panState = useRef<{ startX: number; startY: number; panX: number; panY: number } | null>(null);
 
-  // Einmalig beim ersten Laden auf den Sitzplan zentrieren — siehe
-  // lib/viewportFit.ts. Nur EIN Mal (hasFitRef-Wächter), sonst würde jede
-  // Tischverschiebung (ändert `tables`) die Ansicht wieder zurückspringen
-  // lassen, mitten im Ziehen.
-  const hasFitRef = useRef(false);
+  // Auf den Sitzplan zentrieren — beim ersten Laden UND jedes Mal, wenn
+  // sich `layoutVersion` ändert (Zeilen-Layout wurde neu angewendet, siehe
+  // page.tsx). Bewusst NICHT von `tables` selbst abhängig: das ändert sich
+  // bei JEDER einzelnen Tischverschiebung, was die Ansicht mitten im
+  // Ziehen zurückspringen lassen würde. Ohne diesen Re-Fit blieben Tische
+  // nach "Anordnen" außerhalb des sichtbaren Bereichs, wenn die neue
+  // Anordnung eine andere Ausdehnung hat als die vorherige — sah aus wie
+  // "Layout ist weg", war aber nur nicht im Bild.
   useEffect(() => {
-    if (hasFitRef.current || tables.length === 0 || !containerRef.current) return;
-    hasFitRef.current = true;
+    if (tables.length === 0 || !containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
     onViewportChange(fitViewportToTables(tables, rect.width, rect.height));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tables.length]);
+  }, [layoutVersion, tables.length]);
 
   const handleWheel = useCallback(
     (e: ReactWheelEvent<HTMLDivElement>) => {

@@ -58,6 +58,10 @@ function SeatingApp({ user, onSignOut }: { user: AuthUser; onSignOut: () => void
     deleteSnapshot
   } = useSeatingData(user);
   const [viewport, setViewport] = useState<ViewportState>({ zoom: 1, panX: 0, panY: 0 });
+  // Zählt hoch, wenn sich die Tisch-Anordnung als Ganzes ändert (Zeilen-
+  // Layout anwenden) statt nur ein einzelner Tisch — SeatingCanvas
+  // zentriert die Ansicht dann neu, siehe dortigen Kommentar.
+  const [layoutVersion, setLayoutVersion] = useState(0);
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
   const dragEnabled = connectionStatus === "connected";
 
@@ -193,6 +197,7 @@ function SeatingApp({ user, onSignOut }: { user: AuthUser; onSignOut: () => void
                 tables={data.tables}
                 onApply={(positions) => {
                   for (const p of positions) moveTable(p.tableId, p.x, p.y, p.rotation);
+                  setLayoutVersion((v) => v + 1);
                 }}
               />
             </section>
@@ -210,6 +215,7 @@ function SeatingApp({ user, onSignOut }: { user: AuthUser; onSignOut: () => void
             dragEnabled={dragEnabled}
             draggedByOthers={draggedByOthers}
             moveTable={moveTable}
+            layoutVersion={layoutVersion}
           />
         </div>
       </div>
