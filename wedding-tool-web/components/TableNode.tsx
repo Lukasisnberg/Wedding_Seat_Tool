@@ -85,6 +85,7 @@ export function TableNode({
             seatId={seatId}
             tableId={table.id}
             slot={slot}
+            dims={dims}
             guestId={guestId}
             guestName={guest?.name ?? null}
             groupColor={group?.color ?? null}

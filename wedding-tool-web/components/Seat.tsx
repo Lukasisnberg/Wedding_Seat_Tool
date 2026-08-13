@@ -8,6 +8,7 @@ interface SeatProps {
   seatId: string;
   tableId: string;
   slot: SeatSlot;
+  dims: { w: number; h: number }; // Tischmaße, um slot.cx/cy (relativ zur Tischmitte) in die tischlokalen CSS-Koordinaten (relativ zur oberen linken Ecke) umzurechnen
   guestId: string | null;
   guestName: string | null;
   groupColor: string | null;
@@ -20,6 +21,7 @@ export function Seat({
   seatId,
   tableId,
   slot,
+  dims,
   guestId,
   guestName,
   groupColor,
@@ -34,10 +36,19 @@ export function Seat({
     disabled: !guestId || !dragEnabled
   });
 
+  // getSeatLayout() liefert cx/cy "relativ zur Tischmitte" (siehe
+  // lib/seatGeometry.ts), das umschließende .table-Div positioniert seine
+  // Kinder aber relativ zu seiner oberen linken Ecke (0,0) — ohne die
+  // halbe Tischbreite/-höhe dazuzurechnen, landen alle Sitze systematisch
+  // um (dims.w/2, dims.h/2) verschoben. Bei ungedrehten Tischen sieht das
+  // nur nach "etwas daneben" aus; bei gedrehten Tischen (rotation != 0)
+  // dreht sich dieser Versatz um den (falschen) Mittelpunkt mit und wirft
+  // die Sitze weit weg vom Tisch — genau das gemeldete "Plätze an der
+  // falschen Stelle".
   const style: CSSProperties = {
     position: "absolute",
-    left: slot.cx - 23,
-    top: slot.cy - 11,
+    left: dims.w / 2 + slot.cx - 23,
+    top: dims.h / 2 + slot.cy - 11,
     width: 46,
     height: 22,
     background: guestName ? groupColor ?? "#c9c5bd" : undefined,
