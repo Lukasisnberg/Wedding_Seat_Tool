@@ -209,6 +209,7 @@ function SeatingApp({ user, onSignOut }: { user: AuthUser; onSignOut: () => void
             onViewportChange={setViewport}
             dragEnabled={dragEnabled}
             draggedByOthers={draggedByOthers}
+            moveTable={moveTable}
           />
         </div>
       </div>

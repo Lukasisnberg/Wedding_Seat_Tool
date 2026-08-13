@@ -25,6 +25,7 @@ interface SeatingCanvasProps {
   onViewportChange: (next: ViewportState) => void;
   dragEnabled: boolean;
   draggedByOthers: Map<string, string>;
+  moveTable: (tableId: string, posX: number, posY: number, rotation: number) => void;
 }
 
 // Pan/Zoom laufen bewusst NICHT über dnd-kit (das ist für das Ziehen von
@@ -42,7 +43,8 @@ export function SeatingCanvas({
   viewport,
   onViewportChange,
   dragEnabled,
-  draggedByOthers
+  draggedByOthers,
+  moveTable
 }: SeatingCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const panState = useRef<{ startX: number; startY: number; panX: number; panY: number } | null>(null);
@@ -133,6 +135,7 @@ export function SeatingCanvas({
             zoom={viewport.zoom}
             dragEnabled={dragEnabled}
             draggedByOthers={draggedByOthers}
+            moveTable={moveTable}
           />
         ))}
       </div>
